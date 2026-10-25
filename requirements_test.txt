@@ -7,3 +7,5 @@ bluetooth-auto-recovery
 bluetooth-data-tools
 dbus-fast
 ruff
+aiousbwatcher
+pyserial
