@@ -1,0 +1,147 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Add glo Hyper",
+        "description": "Pick the device. Close the myglo app: the glo accepts only one connection at a time.",
+        "data": {
+          "address": "Device"
+        }
+      },
+      "bluetooth_confirm": {
+        "description": "Do you want to add {name}? Close the myglo app first."
+      }
+    },
+    "abort": {
+      "already_configured": "Device is already configured",
+      "no_devices_found": "No glo found. On first pairing press the button 5 times to enter pairing mode."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "glo Hyper options",
+        "data": {
+          "persistent_connection": "Persistent connection (real-time updates)",
+          "scan_interval": "Polling interval (seconds)",
+          "adapters": "Bluetooth adapters to use",
+          "night_start": "Night window: start",
+          "night_end": "Night window: end",
+          "night_interval": "Night window: interval (minutes)"
+        },
+        "data_description": {
+          "persistent_connection": "When enabled Home Assistant stays connected and receives session events instantly. The myglo app will not be able to connect and the glo battery drains a bit faster.",
+          "scan_interval": "How often to read the device (30-3600 s).",
+          "adapters": "The glo only accepts adapters it has been paired with. Select only those (e.g. the ESP32 proxy). No selection = all. To pair a new adapter put the glo in pairing mode (5 presses) next to it.",
+          "night_start": "From this time polling slows down.",
+          "night_end": "From this time the normal interval resumes.",
+          "night_interval": "How often to read the glo during the night window (0 = disabled). Each read wakes the glo: while charging it vibrates."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "remaining_sessions": {
+        "name": "Remaining sessions"
+      },
+      "charging_state": {
+        "name": "Charging",
+        "state": {
+          "not_charging": "Not charging",
+          "regular": "Charging",
+          "fast": "Fast charging",
+          "wireless": "Wireless charging"
+        }
+      },
+      "session_state": {
+        "name": "Session state",
+        "state": {
+          "idle": "Idle",
+          "heating": "Heating",
+          "in_session": "In session",
+          "ending": "Ending"
+        }
+      },
+      "device_state": {
+        "name": "Device state",
+        "state": {
+          "standby": "Standby",
+          "standard": "Standard",
+          "boost": "Boost",
+          "self_cleaning": "Self cleaning"
+        }
+      },
+      "stick": {
+        "name": "Stick",
+        "state": {
+          "empty": "Empty",
+          "inserted": "Inserted",
+          "non_consumable": "Not recognized"
+        }
+      },
+      "sessions_since_cleaning": {
+        "name": "Sessions since cleaning"
+      },
+      "cleaning_threshold": {
+        "name": "Cleaning threshold"
+      },
+      "complete_sessions": {
+        "name": "Total sessions"
+      },
+      "incomplete_sessions": {
+        "name": "Interrupted sessions"
+      },
+      "last_seen": {
+        "name": "Last seen"
+      }
+    },
+    "binary_sensor": {
+      "session_active": {
+        "name": "Session active"
+      },
+      "stick_inserted": {
+        "name": "Stick inserted"
+      },
+      "cleaning_due": {
+        "name": "Cleaning due"
+      }
+    },
+    "switch": {
+      "auto_start": {
+        "name": "Auto start"
+      },
+      "auto_stop": {
+        "name": "Auto stop"
+      }
+    },
+    "lock": {
+      "device_lock": {
+        "name": "Lock"
+      }
+    },
+    "select": {
+      "heating_mode": {
+        "name": "Mode",
+        "state": {
+          "standard": "Standard",
+          "boost": "Boost"
+        }
+      }
+    },
+    "button": {
+      "find": {
+        "name": "Find my glo"
+      }
+    }
+  },
+  "exceptions": {
+    "not_in_range": {
+      "message": "glo is not reachable over Bluetooth"
+    },
+    "command_failed": {
+      "message": "Command failed: {error}"
+    }
+  }
+}

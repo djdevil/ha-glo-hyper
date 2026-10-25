@@ -1,0 +1,367 @@
+# Scheda di esempio per glo Hyper Pro+ (richiede button-card, mini-graph-card, card-mod).
+# Sostituisci "hyper_pro_1234" con il nome delle tue entità (es. hyper_pro_5678).
+type: vertical-stack
+cards:
+  # --- Titolo sezione --------------------------------------------------------
+  - type: custom:button-card
+    name: 🔥 GLO HYPER PRO+
+    styles:
+      card:
+        - background: rgba(255,255,255,0.05)
+        - border-radius: 12px
+        - padding: 8px
+        - margin-bottom: 8px
+        - border: none
+        - box-shadow: none
+      name:
+        - color: rgba(255,255,255,0.6)
+        - font-size: clamp(12px, 2.5vw, 14px)
+        - font-weight: 700
+        - text-align: left
+        - letter-spacing: 1px
+    tap_action:
+      action: none
+
+  # --- Batteria + Sessione ---------------------------------------------------
+  - type: horizontal-stack
+    cards:
+      - type: custom:button-card
+        entity: sensor.hyper_pro_1234_batteria
+        name: Batteria
+        show_state: true
+        show_label: true
+        icon: |
+          [[[
+            if (states['binary_sensor.hyper_pro_1234_in_ricarica'].state === 'on') return 'mdi:battery-charging';
+            const l = parseInt(entity.state) || 0;
+            if (l >= 95) return 'mdi:battery';
+            if (l < 10) return 'mdi:battery-outline';
+            return 'mdi:battery-' + Math.floor(l / 10) * 10;
+          ]]]
+        label: |
+          [[[
+            if (states['binary_sensor.hyper_pro_1234_in_ricarica'].state === 'on') return '⚡ In carica';
+            return states['sensor.hyper_pro_1234_sessioni_rimanenti'].state + ' sessioni rimaste';
+          ]]]
+        triggers_update:
+          - binary_sensor.hyper_pro_1234_in_ricarica
+          - sensor.hyper_pro_1234_sessioni_rimanenti
+        styles:
+          card:
+            - background: |
+                [[[
+                  if (states['binary_sensor.hyper_pro_1234_in_ricarica'].state === 'on')
+                    return 'linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)';
+                  const l = parseInt(entity.state) || 0;
+                  if (l > 50) return 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+                  if (l > 20) return 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)';
+                  return 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)';
+                ]]]
+            - border-radius: 15px
+            - padding: clamp(10px, 2vw, 12px)
+            - height: clamp(90px, 14vw, 105px)
+          icon:
+            - width: clamp(24px, 4.5vw, 28px)
+            - color: white
+          name:
+            - font-size: clamp(10px, 2vw, 11px)
+            - color: rgba(255,255,255,0.9)
+          state:
+            - font-size: clamp(20px, 3.5vw, 22px)
+            - font-weight: 900
+            - color: white
+          label:
+            - font-size: clamp(11px, 2.2vw, 12px)
+            - font-weight: bold
+            - color: white
+        tap_action:
+          action: more-info
+
+      - type: custom:button-card
+        entity: binary_sensor.hyper_pro_1234_sessione_attiva
+        name: Sessione
+        show_state: false
+        show_label: true
+        icon: |
+          [[[
+            const s = states['sensor.hyper_pro_1234_stato_sessione'].state;
+            return s === 'heating' ? 'mdi:fire' : s === 'idle' ? 'mdi:power-sleep' : 'mdi:smoke';
+          ]]]
+        label: |
+          [[[
+            const map = {
+              idle: 'Pronto',
+              heating: '🔥 Riscaldamento',
+              in_session: '💨 In corso',
+              ending: '⏳ Ultimi tiri'
+            };
+            return map[states['sensor.hyper_pro_1234_stato_sessione'].state] || '—';
+          ]]]
+        triggers_update:
+          - sensor.hyper_pro_1234_stato_sessione
+        styles:
+          card:
+            - background: |
+                [[[
+                  const s = states['sensor.hyper_pro_1234_stato_sessione'].state;
+                  if (s === 'heating') return 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)';
+                  if (s === 'in_session' || s === 'ending') return 'linear-gradient(135deg, #ff512f 0%, #dd2476 100%)';
+                  return 'linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)';
+                ]]]
+            - border-radius: 15px
+            - padding: clamp(10px, 2vw, 12px)
+            - height: clamp(90px, 14vw, 105px)
+          icon:
+            - width: clamp(24px, 4.5vw, 28px)
+            - color: white
+          name:
+            - font-size: clamp(10px, 2vw, 11px)
+            - color: rgba(255,255,255,0.9)
+          label:
+            - font-size: clamp(14px, 2.5vw, 16px)
+            - font-weight: 900
+            - color: white
+        tap_action:
+          action: more-info
+
+  # --- Stick / Pulizia / Totali ----------------------------------------------
+  - type: horizontal-stack
+    cards:
+      - type: custom:button-card
+        entity: binary_sensor.hyper_pro_1234_stick_inserito
+        name: Stick
+        show_state: false
+        show_label: true
+        icon: mdi:smoking
+        label: "[[[ return entity.state === 'on' ? 'Inserito' : 'Vuoto'; ]]]"
+        styles:
+          card:
+            - background: |
+                [[[
+                  return entity.state === 'on'
+                    ? 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)'
+                    : 'linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)';
+                ]]]
+            - border-radius: 15px
+            - padding: clamp(10px, 2vw, 12px)
+            - height: clamp(70px, 12vw, 80px)
+          icon:
+            - width: clamp(22px, 4vw, 26px)
+            - color: white
+          name:
+            - font-size: clamp(10px, 2vw, 11px)
+            - color: rgba(255,255,255,0.9)
+          label:
+            - font-size: clamp(13px, 2.2vw, 14px)
+            - font-weight: bold
+            - color: white
+        tap_action:
+          action: more-info
+
+      - type: custom:button-card
+        entity: sensor.hyper_pro_1234_sessioni_dall_ultima_pulizia
+        name: Pulizia
+        show_state: false
+        show_label: true
+        icon: mdi:broom
+        label: |
+          [[[
+            const n = parseInt(entity.state) || 0;
+            const max = parseInt(states['sensor.hyper_pro_1234_soglia_pulizia'].state) || 0;
+            return max ? n + ' / ' + max : n + ' sessioni';
+          ]]]
+        triggers_update:
+          - sensor.hyper_pro_1234_soglia_pulizia
+          - binary_sensor.hyper_pro_1234_pulizia_necessaria
+        styles:
+          card:
+            - background: |
+                [[[
+                  return states['binary_sensor.hyper_pro_1234_pulizia_necessaria'].state === 'on'
+                    ? 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)'
+                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                ]]]
+            - border-radius: 15px
+            - padding: clamp(10px, 2vw, 12px)
+            - height: clamp(70px, 12vw, 80px)
+          icon:
+            - width: clamp(22px, 4vw, 26px)
+            - color: white
+          name:
+            - font-size: clamp(10px, 2vw, 11px)
+            - color: rgba(255,255,255,0.9)
+          label:
+            - font-size: clamp(13px, 2.2vw, 14px)
+            - font-weight: bold
+            - color: white
+        tap_action:
+          action: more-info
+
+      - type: custom:button-card
+        entity: sensor.hyper_pro_1234_sessioni_totali
+        name: Totali
+        show_state: false
+        show_label: true
+        icon: mdi:counter
+        label: |
+          [[[
+            const i = states['sensor.hyper_pro_1234_sessioni_interrotte'].state;
+            return entity.state + ' <span style="opacity:.7;font-weight:400">(' + i + ' interr.)</span>';
+          ]]]
+        triggers_update:
+          - sensor.hyper_pro_1234_sessioni_interrotte
+        styles:
+          card:
+            - background: linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)
+            - border-radius: 15px
+            - padding: clamp(10px, 2vw, 12px)
+            - height: clamp(70px, 12vw, 80px)
+          icon:
+            - width: clamp(22px, 4vw, 26px)
+            - color: white
+          name:
+            - font-size: clamp(10px, 2vw, 11px)
+            - color: rgba(255,255,255,0.9)
+          label:
+            - font-size: clamp(13px, 2.2vw, 14px)
+            - font-weight: bold
+            - color: white
+        tap_action:
+          action: more-info
+
+  # --- Comandi ---------------------------------------------------------------
+  - type: horizontal-stack
+    cards:
+      - type: custom:button-card
+        entity: select.hyper_pro_1234_modalita
+        name: "[[[ return entity.state === 'boost' ? 'Boost' : 'Standard'; ]]]"
+        icon: "[[[ return entity.state === 'boost' ? 'mdi:rocket-launch' : 'mdi:leaf'; ]]]"
+        show_state: false
+        tap_action:
+          action: perform-action
+          perform_action: select.select_next
+          target:
+            entity_id: select.hyper_pro_1234_modalita
+        styles: &comando
+          card:
+            - background: |
+                [[[
+                  const on = ['on', 'boost', 'locked'].includes(entity.state);
+                  return on
+                    ? 'linear-gradient(135deg, #ff512f 0%, #dd2476 100%)'
+                    : 'rgba(255,255,255,0.05)';
+                ]]]
+            - border-radius: 15px
+            - padding: clamp(8px, 1.5vw, 10px)
+            - height: clamp(60px, 10vw, 70px)
+          icon:
+            - width: clamp(20px, 3.5vw, 24px)
+            - color: white
+          name:
+            - font-size: clamp(10px, 1.8vw, 11px)
+            - color: rgba(255,255,255,0.9)
+            - font-weight: 600
+
+      - type: custom:button-card
+        entity: switch.hyper_pro_1234_auto_start
+        name: Auto-start
+        icon: mdi:play-circle-outline
+        tap_action:
+          action: toggle
+        styles: *comando
+
+      - type: custom:button-card
+        entity: switch.hyper_pro_1234_auto_stop
+        name: Auto-stop
+        icon: mdi:stop-circle-outline
+        tap_action:
+          action: toggle
+        styles: *comando
+
+      - type: custom:button-card
+        entity: lock.hyper_pro_1234_blocco
+        name: "[[[ return entity.state === 'locked' ? 'Bloccato' : 'Sbloccato'; ]]]"
+        icon: "[[[ return entity.state === 'locked' ? 'mdi:lock' : 'mdi:lock-open-variant'; ]]]"
+        tap_action:
+          action: perform-action
+          perform_action: "[[[ return entity.state === 'locked' ? 'lock.unlock' : 'lock.lock'; ]]]"
+          target:
+            entity_id: lock.hyper_pro_1234_blocco
+          confirmation:
+            text: Cambiare il blocco del glo?
+        styles: *comando
+
+      - type: custom:button-card
+        entity: button.hyper_pro_1234_trova_il_mio_glo
+        name: Trova
+        icon: mdi:map-marker-radius
+        tap_action:
+          action: perform-action
+          perform_action: button.press
+          target:
+            entity_id: button.hyper_pro_1234_trova_il_mio_glo
+        styles: *comando
+
+  # --- Grafico batteria 24h --------------------------------------------------
+  - type: custom:mini-graph-card
+    entities:
+      - entity: sensor.hyper_pro_1234_batteria
+        name: Batteria
+    hours_to_show: 24
+    points_per_hour: 2
+    line_width: 3
+    smoothing: true
+    show:
+      icon: false
+      name: false
+      state: false
+      labels: false
+      fill: fade
+    color_thresholds:
+      - value: 0
+        color: '#eb3349'
+      - value: 21
+        color: '#f7971e'
+      - value: 51
+        color: '#38ef7d'
+    lower_bound: 0
+    upper_bound: 100
+    card_mod:
+      style: |
+        ha-card {
+          background: rgba(255,255,255,0.05) !important;
+          border-radius: 15px !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+  # --- Ultimo contatto -------------------------------------------------------
+  - type: custom:button-card
+    entity: sensor.hyper_pro_1234_ultimo_contatto
+    show_icon: false
+    show_state: false
+    name: |
+      [[[
+        const t = new Date(entity.state);
+        if (isNaN(t)) return '📡 Mai contattato';
+        const min = Math.round((Date.now() - t) / 60000);
+        const txt = min < 1 ? 'adesso'
+          : min < 60 ? min + ' min fa'
+          : min < 1440 ? Math.floor(min / 60) + ' h fa'
+          : Math.floor(min / 1440) + ' g fa';
+        return '📡 Ultimo contatto: ' + txt;
+      ]]]
+    triggers_update:
+      - sensor.time
+    styles:
+      card:
+        - background: rgba(255,255,255,0.05)
+        - border-radius: 12px
+        - padding: 6px
+        - border: none
+        - box-shadow: none
+      name:
+        - color: rgba(255,255,255,0.5)
+        - font-size: clamp(11px, 2vw, 12px)
+    tap_action:
+      action: more-info

@@ -1,0 +1,147 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Aggiungi glo Hyper",
+        "description": "Scegli il dispositivo. Chiudi l'app myglo: il glo accetta una sola connessione alla volta.",
+        "data": {
+          "address": "Dispositivo"
+        }
+      },
+      "bluetooth_confirm": {
+        "description": "Vuoi aggiungere {name}? Chiudi prima l'app myglo."
+      }
+    },
+    "abort": {
+      "already_configured": "Dispositivo già configurato",
+      "no_devices_found": "Nessun glo trovato. Al primo collegamento premi 5 volte il tasto per attivare la modalità pairing."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opzioni glo Hyper",
+        "data": {
+          "persistent_connection": "Connessione persistente (aggiornamenti in tempo reale)",
+          "scan_interval": "Intervallo di lettura (secondi)",
+          "adapters": "Adattatori Bluetooth da usare",
+          "night_start": "Fascia notturna: inizio",
+          "night_end": "Fascia notturna: fine",
+          "night_interval": "Fascia notturna: intervallo (minuti)"
+        },
+        "data_description": {
+          "persistent_connection": "Se attiva, Home Assistant resta collegato e riceve subito gli eventi di sessione. L'app myglo non potrà connettersi e la batteria del glo dura un po' meno.",
+          "scan_interval": "Ogni quanto leggere il dispositivo (30-3600 s).",
+          "adapters": "Il glo accetta solo gli adattatori con cui è stato abbinato. Seleziona solo quelli (es. il proxy ESP32). Nessuna selezione = tutti. Per abbinare un nuovo adattatore metti il glo in pairing (5 pressioni) vicino ad esso.",
+          "night_start": "Da quest'ora le letture si diradano.",
+          "night_end": "Da quest'ora si torna all'intervallo normale.",
+          "night_interval": "Ogni quanti minuti leggere il glo nella fascia notturna (0 = fascia disattivata). Ogni lettura risveglia il glo: sotto carica vibra."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "remaining_sessions": {
+        "name": "Sessioni rimanenti"
+      },
+      "charging_state": {
+        "name": "Ricarica",
+        "state": {
+          "not_charging": "Non in carica",
+          "regular": "In carica",
+          "fast": "Ricarica rapida",
+          "wireless": "Ricarica wireless"
+        }
+      },
+      "session_state": {
+        "name": "Stato sessione",
+        "state": {
+          "idle": "Inattivo",
+          "heating": "Riscaldamento",
+          "in_session": "In sessione",
+          "ending": "Fine sessione"
+        }
+      },
+      "device_state": {
+        "name": "Stato dispositivo",
+        "state": {
+          "standby": "Standby",
+          "standard": "Standard",
+          "boost": "Boost",
+          "self_cleaning": "Autopulizia"
+        }
+      },
+      "stick": {
+        "name": "Stick",
+        "state": {
+          "empty": "Assente",
+          "inserted": "Inserito",
+          "non_consumable": "Non riconosciuto"
+        }
+      },
+      "sessions_since_cleaning": {
+        "name": "Sessioni dall'ultima pulizia"
+      },
+      "cleaning_threshold": {
+        "name": "Soglia pulizia"
+      },
+      "complete_sessions": {
+        "name": "Sessioni totali"
+      },
+      "incomplete_sessions": {
+        "name": "Sessioni interrotte"
+      },
+      "last_seen": {
+        "name": "Ultimo contatto"
+      }
+    },
+    "binary_sensor": {
+      "session_active": {
+        "name": "Sessione attiva"
+      },
+      "stick_inserted": {
+        "name": "Stick inserito"
+      },
+      "cleaning_due": {
+        "name": "Pulizia necessaria"
+      }
+    },
+    "switch": {
+      "auto_start": {
+        "name": "Auto-start"
+      },
+      "auto_stop": {
+        "name": "Auto-stop"
+      }
+    },
+    "lock": {
+      "device_lock": {
+        "name": "Blocco"
+      }
+    },
+    "select": {
+      "heating_mode": {
+        "name": "Modalità",
+        "state": {
+          "standard": "Standard",
+          "boost": "Boost"
+        }
+      }
+    },
+    "button": {
+      "find": {
+        "name": "Trova il mio glo"
+      }
+    }
+  },
+  "exceptions": {
+    "not_in_range": {
+      "message": "glo non raggiungibile via Bluetooth"
+    },
+    "command_failed": {
+      "message": "Comando non riuscito: {error}"
+    }
+  }
+}

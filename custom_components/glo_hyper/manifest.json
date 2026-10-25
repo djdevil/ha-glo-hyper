@@ -1,0 +1,19 @@
+{
+  "domain": "glo_hyper",
+  "name": "glo Hyper",
+  "bluetooth": [
+    {
+      "service_uuid": "6cd6c8b5-e378-0204-000a-1b9740683449",
+      "connectable": true
+    }
+  ],
+  "codeowners": ["@djdevil"],
+  "config_flow": true,
+  "dependencies": ["bluetooth_adapters"],
+  "documentation": "https://github.com/djdevil/ha-glo-hyper",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/djdevil/ha-glo-hyper/issues",
+  "requirements": [],
+  "version": "0.5.0"
+}
