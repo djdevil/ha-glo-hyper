@@ -18,4 +18,4 @@ jobs:
       - name: Ruff
         run: ruff check custom_components
       - name: Pytest
-        run: pytest -q tests
+        run: pytest -q -p no:homeassistant tests
