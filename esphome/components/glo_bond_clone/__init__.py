@@ -6,8 +6,11 @@ pubblico e dalla chiave LTK. Questo componente, prima che il Bluetooth parta:
 1. imposta il MAC Bluetooth uguale a quello dell'ESP abbinato;
 2. scrive nella NVS la voce ``bt_config.conf/bt_cfg_key0`` copiata da quell'ESP.
 
-ESPERIMENTO: due ESP con lo stesso MAC Bluetooth risultano a Home Assistant come
-lo stesso scanner. Usare un solo ESP clonato acceso alla volta.
+Con ``report_real_mac: true`` (predefinito) a Home Assistant viene comunicato il
+MAC Bluetooth vero del chip, non quello clonato: così più ESP clonati restano
+scanner distinti e possono stare accesi insieme. Si ottiene sostituendo al
+linker ``esp_bt_dev_get_address()``, che ESPHome usa solo per riportare il MAC;
+la radio continua a usare quello clonato.
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ AUTO_LOAD: list[str] = []
 
 CONF_BT_MAC = "bt_mac"
 CONF_BOND_HEX = "bond_hex"
+CONF_REPORT_REAL_MAC = "report_real_mac"
 
 glo_bond_clone_ns = cg.esphome_ns.namespace("glo_bond_clone")
 GloBondClone = glo_bond_clone_ns.class_("GloBondClone", cg.Component)
@@ -42,6 +46,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.GenerateID(): cv.declare_id(GloBondClone),
         cv.Required(CONF_BT_MAC): cv.mac_address,
         cv.Required(CONF_BOND_HEX): _bond_hex,
+        cv.Optional(CONF_REPORT_REAL_MAC, default=True): cv.boolean,
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -52,3 +57,7 @@ async def to_code(config: dict) -> None:
     cg.add(var.set_bt_mac(config[CONF_BT_MAC].as_hex))
     bond: bytes = bytes.fromhex(config[CONF_BOND_HEX])
     cg.add(var.set_bond([cg.RawExpression(str(b)) for b in bond]))
+    if config[CONF_REPORT_REAL_MAC]:
+        # Le chiamate a esp_bt_dev_get_address() vanno a __wrap_esp_bt_dev_get_address().
+        cg.add_build_flag("-Wl,--wrap=esp_bt_dev_get_address")
+        cg.add_define("USE_GLO_BOND_CLONE_REAL_MAC")

@@ -5,6 +5,7 @@
 #include <esp_mac.h>
 #include <nvs.h>
 
+#include "esphome/core/defines.h"
 #include "esphome/core/log.h"
 
 namespace esphome::glo_bond_clone {
@@ -13,6 +14,12 @@ static const char *const TAG = "glo_bond_clone";
 // Namespace e chiave in cui Bluedroid (ESP-IDF) salva gli abbinamenti BLE.
 static const char *const BT_NAMESPACE = "bt_config.conf";
 static const char *const BT_KEY = "bt_cfg_key0";
+
+/// MAC Bluetooth vero del chip: MAC base di fabbrica + 2, come fa ESP-IDF sull'ESP32.
+static void real_bt_mac(uint8_t mac[6]) {
+  esp_efuse_mac_get_default(mac);
+  mac[5] += 2;
+}
 
 void GloBondClone::setup() {
   this->mac_ok_ = this->apply_mac_();
@@ -74,15 +81,37 @@ bool GloBondClone::apply_bond_() {
 }
 
 void GloBondClone::dump_config() {
-  uint8_t mac[6] = {};
-  esp_read_mac(mac, ESP_MAC_BT);
+  uint8_t radio[6] = {};
+  esp_read_mac(radio, ESP_MAC_BT);
+  uint8_t real[6] = {};
+  real_bt_mac(real);
+#ifdef USE_GLO_BOND_CLONE_REAL_MAC
+  const char *reported = "MAC vero";
+#else
+  const char *reported = "MAC clonato";
+#endif
   ESP_LOGCONFIG(TAG,
                 "glo bond clone:\n"
-                "  MAC Bluetooth: %02X:%02X:%02X:%02X:%02X:%02X (%s)\n"
+                "  MAC Bluetooth radio: %02X:%02X:%02X:%02X:%02X:%02X (%s)\n"
+                "  MAC vero del chip: %02X:%02X:%02X:%02X:%02X:%02X\n"
+                "  Comunicato a Home Assistant: %s\n"
                 "  Abbinamento: %u byte, %s",
-                mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], this->mac_ok_ ? "impostato" : "ERRORE",
-                static_cast<unsigned>(this->bond_.size()),
+                radio[0], radio[1], radio[2], radio[3], radio[4], radio[5],
+                this->mac_ok_ ? "impostato" : "ERRORE", real[0], real[1], real[2], real[3], real[4],
+                real[5], reported, static_cast<unsigned>(this->bond_.size()),
                 this->bond_written_ ? "scritto ora" : "già presente");
 }
 
 }  // namespace esphome::glo_bond_clone
+
+#ifdef USE_GLO_BOND_CLONE_REAL_MAC
+// Con -Wl,--wrap=esp_bt_dev_get_address ogni chiamata a esp_bt_dev_get_address()
+// arriva qui. ESPHome la usa solo per comunicare il MAC dell'adattatore a Home
+// Assistant: restituendo quello vero, ogni ESP resta uno scanner distinto, mentre la
+// radio (che prende l'indirizzo dal controller) usa quello clonato verso il glo.
+extern "C" const uint8_t *__wrap_esp_bt_dev_get_address(void) {
+  static uint8_t mac[6] = {};
+  esphome::glo_bond_clone::real_bt_mac(mac);
+  return mac;
+}
+#endif

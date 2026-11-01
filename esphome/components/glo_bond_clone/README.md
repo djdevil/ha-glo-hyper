@@ -29,9 +29,15 @@ glo_bond_clone:
 repository. Si ricava leggendo la partizione NVS dell'ESP abbinato con
 `esptool read-flash` e decodificandola.
 
+Opzione `report_real_mac` (predefinita `true`): a Home Assistant viene comunicato
+il MAC Bluetooth vero del chip, mentre la radio usa quello clonato verso il glo.
+Così più ESP clonati restano scanner distinti e possono stare accesi insieme.
+Funziona sostituendo al linker `esp_bt_dev_get_address()`, che ESPHome usa solo
+per riportare il MAC dell'adattatore.
+
 ## Limiti
 
-- Home Assistant identifica i proxy dal MAC Bluetooth: due ESP con lo stesso MAC
-  sono visti come lo stesso scanner. Tenere acceso un solo ESP clonato alla volta.
+- Se `report_real_mac` è `false`, Home Assistant vede gli ESP clonati come lo
+  stesso scanner: tenerne acceso uno solo alla volta.
 - Se il glo viene riabbinato (5 pressioni, app myglo, reset) le chiavi cambiano e
   `bond_hex` va aggiornato.
