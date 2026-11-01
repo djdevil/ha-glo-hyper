@@ -187,12 +187,18 @@ class GloCoordinator(DataUpdateCoordinator[GloData]):
         )
         if ble_device is None:
             self._set_out_of_range(True)
+            self._adjust_interval(GloData())
             return previous
         self._set_out_of_range(False)
         self.device.set_ble_device(ble_device)
         try:
             data: GloData = await self.device.async_update()
         except GloConnectionError as err:
+            # Anche se la lettura fallisce l'intervallo va ricalcolato: senza,
+            # dopo un errore notturno resterebbe quello lungo per tutto il giorno.
+            # GloData() vuoto: nessuna sessione attiva, quindi niente intervallo
+            # breve che ripeterebbe tentativi a vuoto ogni 30 s.
+            self._adjust_interval(GloData())
             raise UpdateFailed(str(err)) from err
         self._adjust_interval(data)
         self._save_snapshot(data)

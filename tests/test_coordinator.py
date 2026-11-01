@@ -9,12 +9,13 @@ from datetime import timedelta
 from pathlib import Path
 
 import pytest
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from custom_components.glo_hyper import coordinator as coord_mod  # noqa: E402
 from custom_components.glo_hyper.coordinator import GloCoordinator  # noqa: E402
-from custom_components.glo_hyper.device import GloData  # noqa: E402
+from custom_components.glo_hyper.device import GloConnectionError, GloData  # noqa: E402
 from custom_components.glo_hyper.protocol import (  # noqa: E402
     DeviceState,
     SessionState,
@@ -153,3 +154,21 @@ def test_immediate_refresh_on_return_in_range() -> None:
     assert hass.tasks == 1 and coord.out_of_range is False
     coord._handle_advertisement(FakeInfo(ESP), None)  # type: ignore[arg-type]
     assert hass.tasks == 1  # già in portata: nessuna lettura extra
+
+
+class FailingDevice(FakeDevice):
+    async def async_update(self) -> GloData:
+        self.updates += 1
+        raise GloConnectionError("timeout")
+
+
+def test_failed_read_resets_long_night_interval(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Dopo un errore l'intervallo notturno (4 h) non deve restare attivo di giorno."""
+    coord = _coordinator(frozenset({ESP}))
+    coord.device = FailingDevice()  # type: ignore[assignment]
+    coord.update_interval = timedelta(hours=4)
+    _visible_from(monkeypatch, [ESP])
+    with pytest.raises(UpdateFailed):
+        asyncio.run(coord._async_update_data())
+    assert coord.device.updates == 1  # type: ignore[attr-defined]
+    assert coord.update_interval == timedelta(seconds=300)
