@@ -133,6 +133,9 @@
     "button": {
       "find": {
         "name": "Trova il mio glo"
+      },
+      "refresh": {
+        "name": "Interroga ora"
       }
     }
   },
@@ -142,6 +145,9 @@
     },
     "command_failed": {
       "message": "Comando non riuscito: {error}"
+    },
+    "refresh_failed": {
+      "message": "Lettura non riuscita: {error}"
     }
   }
 }

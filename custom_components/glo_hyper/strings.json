@@ -133,6 +133,9 @@
     "button": {
       "find": {
         "name": "Find my glo"
+      },
+      "refresh": {
+        "name": "Refresh now"
       }
     }
   },
@@ -142,6 +145,9 @@
     },
     "command_failed": {
       "message": "Command failed: {error}"
+    },
+    "refresh_failed": {
+      "message": "Refresh failed: {error}"
     }
   }
 }
