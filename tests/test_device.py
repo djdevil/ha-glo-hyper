@@ -61,6 +61,9 @@ class FakeClient:
         self.stats: dict[int, bytes] = {8: (1234).to_bytes(4, "big"), 9: (56).to_bytes(4, "big")}
         self.answer_stats: bool = True
         self.echo: bytes | None = None
+        # Come il glo reale: a volte ripete la risposta poco dopo (secondi).
+        self.duplicate_delay: float | None = None
+        self.reply_delay: float = 0.0
 
     async def read_gatt_char(self, uuid: str) -> bytearray:
         return bytearray(self.values[uuid])
@@ -72,7 +75,10 @@ class FakeClient:
         elif uuid == CHAR_LIFECYCLE:
             if self.answer_stats and uuid in self.notify:
                 payload: bytes = self.stats[data[1]]
-                asyncio.get_running_loop().call_soon(self.push, uuid, payload)
+                loop = asyncio.get_running_loop()
+                loop.call_later(self.reply_delay, self.push, uuid, payload)
+                if self.duplicate_delay is not None:
+                    loop.call_later(self.duplicate_delay, self.push, uuid, payload)
         elif uuid == CHAR_SESSION_STATUS:
             status = bytearray(self.values[uuid])
             status[data[0]] = data[1]  # opcode 2 -> byte 2, opcode 3 -> byte 3
@@ -91,8 +97,10 @@ class FakeClient:
         self.is_connected = False
 
     def push(self, uuid: str, payload: bytes) -> None:
-        char = FakeCharacteristic(uuid)
-        self.notify[uuid](char, bytearray(payload))  # type: ignore[arg-type]
+        callback: NotifyCallback | None = self.notify.get(uuid)
+        if callback is None:  # notifiche già disattivate
+            return
+        callback(FakeCharacteristic(uuid), bytearray(payload))  # type: ignore[arg-type]
 
 
 @pytest.fixture
@@ -239,3 +247,14 @@ def test_incomplete_equal_to_complete_keeps_known_value() -> None:
     assert device_mod._checked_incomplete(19, 3, previous) == 3
     assert device_mod._checked_incomplete(19, 19, GloData()) == 19
 
+
+
+def test_delayed_duplicate_reply_is_not_taken_for_next_stat(fake: FakeClient) -> None:
+    """La copia ritardata delle complete non deve diventare il valore delle interrotte."""
+    # La copia arriva dopo la richiesta successiva ma prima della risposta vera.
+    fake.reply_delay = 0.05
+    fake.duplicate_delay = 0.07
+    dev = GloDevice(_ble(), persistent=False)
+    data: GloData = asyncio.run(dev.async_update())
+    assert data.complete_sessions == 1234
+    assert data.incomplete_sessions == 56

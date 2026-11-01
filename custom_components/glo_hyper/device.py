@@ -352,9 +352,19 @@ class GloDevice:
                 complete: int = await self._read_stat(
                     client, queue, LifecycleStat.COMPLETE_SESSIONS
                 )
+                # Il glo a volte ripete la risposta poco dopo: si lascia arrivare la
+                # copia e la si scarta prima di chiedere la statistica successiva,
+                # altrimenti verrebbe presa per il valore delle interrotte.
+                await asyncio.sleep(_STAT_SETTLE)
                 incomplete: int = await self._read_stat(
                     client, queue, LifecycleStat.INCOMPLETE_SESSIONS
                 )
+                if incomplete == complete:
+                    # Probabile eco tardivo: un secondo tentativo dopo una pausa.
+                    await asyncio.sleep(_STAT_SETTLE)
+                    incomplete = await self._read_stat(
+                        client, queue, LifecycleStat.INCOMPLETE_SESSIONS
+                    )
             finally:
                 try:
                     await client.stop_notify(CHAR_LIFECYCLE)
